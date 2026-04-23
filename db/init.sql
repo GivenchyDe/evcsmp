@@ -244,3 +244,21 @@ CREATE TABLE IF NOT EXISTS `chat_message` (
 SET FOREIGN_KEY_CHECKS = 1;
 
 
+
+
+-- ------------------------------------------------------------
+-- 14. 消息推送记录表
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `message_push` (
+  `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT COMMENT '推送记录ID',
+  `type`        TINYINT       NOT NULL COMMENT '消息类型: 0=订单 1=充值 2=反馈 3=公告 4=故障',
+  `title`       VARCHAR(100)  NOT NULL COMMENT '消息标题',
+  `content`     VARCHAR(500)  NOT NULL COMMENT '消息内容',
+  `user_count`  INT           NOT NULL DEFAULT 0 COMMENT '推送用户数',
+  `read_count`  INT           NOT NULL DEFAULT 0 COMMENT '已读用户数',
+  `read_rate`   DECIMAL(5,2)  NOT NULL DEFAULT 0.00 COMMENT '阅读率',
+  `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB COMMENT='消息推送记录表';
+
+SET FOREIGN_KEY_CHECKS = 1;

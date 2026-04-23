@@ -20,6 +20,40 @@ const fetchList = async () => {
     const res = await request.get('/gun/list', { params: { page: page.value, limit: limit.value, keyword: keyword.value } })
     list.value = res.data?.records || []
     total.value = res.data?.total || 0
+    
+    // 获取充电桩和充电站信息
+    if (list.value.length > 0) {
+      const chargerIds = [...new Set(list.value.map(item => item.chargerId))]
+      
+      // 获取充电桩信息
+      const chargerRes = await request.get('/charger/list', { 
+        params: { page: 1, limit: 1000 } 
+      })
+      const chargerMap = {}
+      chargerRes.data?.records?.forEach(charger => {
+        chargerMap[charger.id] = charger
+      })
+      
+      // 获取充电站信息
+      const stationIds = [...new Set(Object.values(chargerMap).map(c => c.stationId))]
+      const stationRes = await request.get('/station/list', { 
+        params: { page: 1, limit: 1000 } 
+      })
+      const stationMap = {}
+      stationRes.data?.records?.forEach(station => {
+        stationMap[station.id] = station.name
+      })
+      
+      // 为每个充电枪添加关联信息
+      list.value = list.value.map(gun => {
+        const charger = chargerMap[gun.chargerId]
+        return {
+          ...gun,
+          chargerNo: charger?.deviceNo || `充电桩${gun.chargerId}`,
+          stationName: stationMap[charger?.stationId] || `充电站${charger?.stationId}`
+        }
+      })
+    }
   } finally { loading.value = false }
 }
 
@@ -69,7 +103,8 @@ onMounted(fetchList)
       </template>
       <el-table :data="list" v-loading="loading" border stripe>
         <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="chargerId" label="充电桩ID" width="90" />
+        <el-table-column prop="stationName" label="所属充电站" width="150" />
+        <el-table-column prop="chargerNo" label="充电桩编号" width="120" />
         <el-table-column prop="gunNo" label="枪号" width="100" />
         <el-table-column prop="status" label="状态" width="80">
           <template #default="{row}"><el-tag :type="['success','danger','info'][row.status]||'info'" size="small">{{['空闲','繁忙','故障'][row.status]||'未知'}}</el-tag></template>

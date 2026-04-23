@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import request from '@/utils/request.js'
 import { getChargerList, addCharger, updateCharger, deleteCharger } from '@/api/charger.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -25,6 +26,24 @@ const fetchList = async () => {
     const res = await getChargerList(page.value, limit.value, keyword.value)
     list.value = res.data?.records || []
     total.value = res.data?.total || 0
+    
+    // 获取充电站名称
+    if (list.value.length > 0) {
+      const stationIds = [...new Set(list.value.map(item => item.stationId))]
+      const stationRes = await request.get('/station/list', { 
+        params: { page: 1, limit: 1000 } 
+      })
+      const stationMap = {}
+      stationRes.data?.records?.forEach(station => {
+        stationMap[station.id] = station.name
+      })
+      
+      // 为每个充电桩添加充电站名称
+      list.value = list.value.map(charger => ({
+        ...charger,
+        stationName: stationMap[charger.stationId] || `充电站${charger.stationId}`
+      }))
+    }
   } finally { loading.value = false }
 }
 
@@ -89,7 +108,7 @@ onMounted(fetchList)
       <el-table :data="list" v-loading="loading" border stripe>
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="deviceNo" label="设备编号" width="130" />
-        <el-table-column prop="stationId" label="网点ID" width="80" />
+        <el-table-column prop="stationName" label="所属充电站" width="150" />
         <el-table-column prop="type" label="类型" width="80">
           <template #default="{ row }">
             <el-tag :type="row.type === 1 ? 'success' : 'warning'" size="small">{{ row.type === 1 ? '快充' : '慢充' }}</el-tag>

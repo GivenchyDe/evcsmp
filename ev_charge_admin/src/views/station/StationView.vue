@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { getStationList, addStation, updateStation, deleteStation } from '@/api/station.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -75,6 +76,12 @@ const handleDelete = (row) => {
     const res = await deleteStation(row.id)
     if (res.success) { ElMessage.success('删除成功'); fetchList() }
   })
+}
+
+const handleViewDetail = (row) => {
+  // 跳转到充电站详情页
+  const router = useRouter()
+  router.push(`/station-detail/${row.id}`)
 }
 
 const initMap = async () => {
@@ -225,8 +232,9 @@ onMounted(fetchList)
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
+            <el-button type="success" size="small" @click="handleViewDetail(row)">详情</el-button>
             <el-button type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
             <el-button type="danger" size="small" @click="handleDelete(row)">删除</el-button>
           </template>

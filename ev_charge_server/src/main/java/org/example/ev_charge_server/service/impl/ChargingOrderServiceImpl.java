@@ -5,9 +5,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.example.ev_charge_server.comm.Result;
 import org.example.ev_charge_server.entity.ChargingOrder;
+import org.example.ev_charge_server.entity.Gun;
 import org.example.ev_charge_server.service.ChargingOrderService;
+import org.example.ev_charge_server.service.GunService;
 import org.example.ev_charge_server.mapper.ChargingOrderMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +23,9 @@ import java.util.List;
 @Service
 public class ChargingOrderServiceImpl extends ServiceImpl<ChargingOrderMapper, ChargingOrder>
     implements ChargingOrderService{
+
+    @Autowired
+    private GunService gunService;
 
     @Override
     public List<ChargingOrder> listByUser(Integer userId) {
@@ -35,6 +42,7 @@ public class ChargingOrderServiceImpl extends ServiceImpl<ChargingOrderMapper, C
     }
 
     @Override
+    @Transactional
     public Result<ChargingOrder> createOrder(ChargingOrder order) {
         order.setStatus(0);
         order.setCreatedAt(new java.util.Date());
@@ -42,10 +50,15 @@ public class ChargingOrderServiceImpl extends ServiceImpl<ChargingOrderMapper, C
         if (!saved) {
             return Result.error("创建订单失败");
         }
+        
+        // 更新充电枪状态为"繁忙"
+        updateGunStatus(order.getGunId(), 1);
+        
         return Result.ok(order).setMessage("订单创建成功");
     }
 
     @Override
+    @Transactional
     public Result<ChargingOrder> payOrder(Integer id, Integer payType) {
         ChargingOrder order = getById(id);
         if (order == null) {
@@ -61,10 +74,15 @@ public class ChargingOrderServiceImpl extends ServiceImpl<ChargingOrderMapper, C
         if (!updated) {
             return Result.error("结算失败");
         }
+        
+        // 更新充电枪状态为"空闲"
+        updateGunStatus(order.getGunId(), 0);
+        
         return Result.ok(order).setMessage("结算成功");
     }
 
     @Override
+    @Transactional
     public Result<ChargingOrder> cancelOrder(Integer id) {
         ChargingOrder order = getById(id);
         if (order == null) {
@@ -78,6 +96,10 @@ public class ChargingOrderServiceImpl extends ServiceImpl<ChargingOrderMapper, C
         if (!updated) {
             return Result.error("取消失败");
         }
+        
+        // 更新充电枪状态为"空闲"
+        updateGunStatus(order.getGunId(), 0);
+        
         return Result.ok(order).setMessage("取消成功");
     }
 
@@ -100,6 +122,22 @@ public class ChargingOrderServiceImpl extends ServiceImpl<ChargingOrderMapper, C
             return Result.error("申请退款失败");
         }
         return Result.ok(existingOrder).setMessage("退款申请已提交");
+    }
+    
+    /**
+     * 更新充电枪状态
+     * @param gunId 充电枪ID
+     * @param status 状态: 0=空闲 1=繁忙 2=故障
+     */
+    private void updateGunStatus(Integer gunId, Integer status) {
+        if (gunId == null) {
+            return;
+        }
+        Gun gun = gunService.getById(gunId);
+        if (gun != null) {
+            gun.setStatus(status);
+            gunService.updateById(gun);
+        }
     }
 }
 

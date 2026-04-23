@@ -1,0 +1,20 @@
+# IDE
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+
+# Build
+target/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Log
+*.log
+
+# Env
+.env

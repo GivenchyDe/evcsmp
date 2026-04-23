@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import request from '@/utils/request.js'
 import { getOrderList, deleteOrder } from '@/api/order.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -19,6 +20,66 @@ const fetchList = async () => {
     const res = await getOrderList(page.value, limit.value, keyword.value)
     list.value = res.data?.records || []
     total.value = res.data?.total || 0
+    
+    // 获取关联信息
+    if (list.value.length > 0) {
+      // 获取用户信息
+      const userIds = [...new Set(list.value.map(item => item.userId))]
+      const userRes = await request.get('/user/list', { 
+        params: { page: 1, limit: 1000 } 
+      })
+      const userMap = {}
+      userRes.data?.records?.forEach(user => {
+        userMap[user.id] = user
+      })
+      
+      // 获取充电站信息
+      const stationIds = [...new Set(list.value.map(item => item.stationId))]
+      const stationRes = await request.get('/station/list', { 
+        params: { page: 1, limit: 1000 } 
+      })
+      const stationMap = {}
+      stationRes.data?.records?.forEach(station => {
+        stationMap[station.id] = station
+      })
+      
+      // 获取充电桩信息
+      const chargerIds = [...new Set(list.value.map(item => item.chargerId))]
+      const chargerRes = await request.get('/charger/list', { 
+        params: { page: 1, limit: 1000 } 
+      })
+      const chargerMap = {}
+      chargerRes.data?.records?.forEach(charger => {
+        chargerMap[charger.id] = charger
+      })
+      
+      // 获取充电枪信息
+      const gunIds = [...new Set(list.value.map(item => item.gunId))]
+      const gunRes = await request.get('/gun/list', { 
+        params: { page: 1, limit: 1000 } 
+      })
+      const gunMap = {}
+      gunRes.data?.records?.forEach(gun => {
+        gunMap[gun.id] = gun
+      })
+      
+      // 为每个订单添加关联信息
+      list.value = list.value.map(order => {
+        const user = userMap[order.userId]
+        const station = stationMap[order.stationId]
+        const charger = chargerMap[order.chargerId]
+        const gun = gunMap[order.gunId]
+        
+        return {
+          ...order,
+          userName: user?.username || `用户${order.userId}`,
+          userPhone: user?.phone || '',
+          stationName: station?.name || `充电站${order.stationId}`,
+          chargerNo: charger?.deviceNo || `充电桩${order.chargerId}`,
+          gunNo: gun?.gunNo || `充电枪${order.gunId}`
+        }
+      })
+    }
   } finally { loading.value = false }
 }
 
@@ -58,8 +119,15 @@ onMounted(fetchList)
       </template>
       <el-table :data="list" v-loading="loading" border stripe>
         <el-table-column prop="orderNo" label="订单号" width="170" />
-        <el-table-column prop="userId" label="用户ID" width="80" />
-        <el-table-column prop="stationId" label="网点ID" width="80" />
+        <el-table-column prop="userName" label="用户" width="120">
+          <template #default="{row}">
+            <div>{{row.userName}}</div>
+            <div style="font-size:12px;color:#999">{{row.userPhone}}</div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="stationName" label="充电站" width="150" />
+        <el-table-column prop="chargerNo" label="充电桩" width="120" />
+        <el-table-column prop="gunNo" label="充电枪" width="100" />
         <el-table-column prop="electricity" label="充电量" width="90"><template #default="{row}">{{row.electricity}}度</template></el-table-column>
         <el-table-column prop="amount" label="金额" width="90"><template #default="{row}"><span style="color:#f56c6c">¥{{row.amount}}</span></template></el-table-column>
         <el-table-column prop="status" label="状态" width="90"><template #default="{row}"><el-tag :type="statusType[row.status]||'info'" size="small">{{statusMap[row.status]||'未知'}}</el-tag></template></el-table-column>
