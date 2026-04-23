@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.ev_charge_server.mapper.ChargingOrderMapper">
+
+    <resultMap id="BaseResultMap" type="org.example.ev_charge_server.entity.ChargingOrder">
+            <id property="id" column="id" />
+            <result property="orderNo" column="order_no" />
+            <result property="userId" column="user_id" />
+            <result property="stationId" column="station_id" />
+            <result property="chargerId" column="charger_id" />
+            <result property="gunId" column="gun_id" />
+            <result property="pricePerKwh" column="price_per_kwh" />
+            <result property="serviceFee" column="service_fee" />
+            <result property="startTime" column="start_time" />
+            <result property="endTime" column="end_time" />
+            <result property="duration" column="duration" />
+            <result property="electricity" column="electricity" />
+            <result property="amount" column="amount" />
+            <result property="payType" column="pay_type" />
+            <result property="status" column="status" />
+            <result property="refundReason" column="refund_reason" />
+            <result property="createdAt" column="created_at" />
+            <result property="paidAt" column="paid_at" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,order_no,user_id,station_id,charger_id,gun_id,
+        price_per_kwh,service_fee,start_time,end_time,duration,
+        electricity,amount,pay_type,status,refund_reason,
+        created_at,paid_at
+    </sql>
+</mapper>

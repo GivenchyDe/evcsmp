@@ -20,4 +20,18 @@ public interface AdminService extends IService<Admin> {
 
     Result<Admin> login(String username, String password);
 
+    /**
+     * 添加管理员
+     * @param admin 管理员信息
+     * @return 添加结果
+     */
+    Result<Admin> add(Admin admin);
+
+    /**
+     * 修改管理员信息
+     * @param admin 管理员信息
+     * @return 修改结果
+     */
+    Result<Admin> update(Admin admin);
+
 }

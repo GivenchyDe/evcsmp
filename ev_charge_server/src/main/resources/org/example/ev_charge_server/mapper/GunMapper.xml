@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.ev_charge_server.mapper.GunMapper">
+
+    <resultMap id="BaseResultMap" type="org.example.ev_charge_server.entity.Gun">
+            <id property="id" column="id" />
+            <result property="chargerId" column="charger_id" />
+            <result property="gunNo" column="gun_no" />
+            <result property="status" column="status" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,charger_id,gun_no,status
+    </sql>
+</mapper>

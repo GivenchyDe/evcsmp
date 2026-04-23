@@ -35,4 +35,44 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         admin.setPassword(null);
         return Result.ok(admin).setMessage("登录成功");
     }
+
+    @Override
+    public Result<Admin> add(Admin admin) {
+        QueryWrapper<Admin> queryWrapper = Wrappers.query(Admin.class);
+        queryWrapper.eq("username", admin.getUsername());
+        Admin existingAdmin = getOne(queryWrapper);
+        if (existingAdmin != null) {
+            return Result.error("管理员账号已存在");
+        }
+        boolean saved = save(admin);
+        if (!saved) {
+            return Result.error("添加管理员失败");
+        }
+        return Result.ok(admin).setMessage("添加成功");
+    }
+
+    @Override
+    public Result<Admin> update(Admin admin) {
+        if (admin.getId() == null) {
+            return Result.error("管理员ID不能为空");
+        }
+        Admin existingAdmin = getById(admin.getId());
+        if (existingAdmin == null) {
+            return Result.error("管理员不存在");
+        }
+        if (admin.getUsername() != null && !admin.getUsername().equals(existingAdmin.getUsername())) {
+            QueryWrapper<Admin> queryWrapper = Wrappers.query(Admin.class);
+            queryWrapper.eq("username", admin.getUsername());
+            Admin otherAdmin = getOne(queryWrapper);
+            if (otherAdmin != null) {
+                return Result.error("管理员账号已存在");
+            }
+        }
+        boolean updated = updateById(admin);
+        if (!updated) {
+            return Result.error("修改管理员失败");
+        }
+        return Result.ok(admin).setMessage("修改成功");
+    }
+
 }

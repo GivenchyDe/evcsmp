@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.ev_charge_server.mapper.BillingRuleMapper">
+
+    <resultMap id="BaseResultMap" type="org.example.ev_charge_server.entity.BillingRule">
+            <id property="id" column="id" />
+            <result property="chargerId" column="charger_id" />
+            <result property="pricePerKwh" column="price_per_kwh" />
+            <result property="serviceFee" column="service_fee" />
+            <result property="freeMinutes" column="free_minutes" />
+            <result property="remark" column="remark" />
+            <result property="updatedAt" column="updated_at" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,charger_id,price_per_kwh,service_fee,free_minutes,remark,
+        updated_at
+    </sql>
+</mapper>
