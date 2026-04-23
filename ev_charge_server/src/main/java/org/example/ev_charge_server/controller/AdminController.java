@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.lang3.StringUtils;
 import org.example.ev_charge_server.comm.Result;
 import org.example.ev_charge_server.entity.Admin;
 import org.example.ev_charge_server.mapper.AdminMapper;
@@ -25,8 +26,13 @@ public class AdminController {
     //http://127.0.0.1:8080/admin/list
     @Operation(summary = "查询所有管理员",description = "查询所有管理员信息")
     @GetMapping("/admin/list")
-    public Result<Page<Admin>> list(Integer page, Integer limit) {
+    public Result<Page<Admin>> list(Integer page, Integer limit, String keyword) {
         Page<Admin> pageObj = new Page<>(page, limit);
+        if (StringUtils.isNotBlank(keyword)) {
+            QueryWrapper<Admin> wrapper = new QueryWrapper<>();
+            wrapper.like("username", keyword).or().like("name", keyword).or().like("phone", keyword);
+            return Result.ok(adminService.page(pageObj, wrapper));
+        }
         return Result.ok(adminService.page(pageObj));
     }
 

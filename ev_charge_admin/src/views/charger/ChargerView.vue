@@ -12,6 +12,7 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const form = ref({})
 const formRef = ref(null)
+const keyword = ref('')
 
 const rules = {
   deviceNo: [{ required: true, message: '请输入设备编号', trigger: 'blur' }],
@@ -21,10 +22,21 @@ const rules = {
 const fetchList = async () => {
   loading.value = true
   try {
-    const res = await getChargerList(page.value, limit.value)
+    const res = await getChargerList(page.value, limit.value, keyword.value)
     list.value = res.data?.records || []
     total.value = res.data?.total || 0
   } finally { loading.value = false }
+}
+
+const handleSearch = () => {
+  page.value = 1
+  fetchList()
+}
+
+const handleReset = () => {
+  keyword.value = ''
+  page.value = 1
+  fetchList()
 }
 
 const handleAdd = () => {
@@ -66,7 +78,12 @@ onMounted(fetchList)
       <template #header>
         <div class="card-header">
           <span>充电桩管理</span>
-          <el-button type="primary" @click="handleAdd">新增</el-button>
+          <div class="search-box">
+            <el-input v-model="keyword" placeholder="搜索设备编号/厂家" size="small" clearable style="width:220px" @keyup.enter="handleSearch" />
+            <el-button type="primary" size="small" @click="handleSearch">搜索</el-button>
+            <el-button size="small" @click="handleReset">重置</el-button>
+            <el-button type="primary" size="small" @click="handleAdd">新增</el-button>
+          </div>
         </div>
       </template>
       <el-table :data="list" v-loading="loading" border stripe>
@@ -117,5 +134,6 @@ onMounted(fetchList)
 <style scoped>
 .page-container { padding: 0; }
 .card-header { display: flex; justify-content: space-between; align-items: center; }
+.search-box { display: flex; gap: 8px; align-items: center; }
 .pagination { margin-top: 16px; justify-content: flex-end; }
 </style>

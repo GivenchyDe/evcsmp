@@ -11,14 +11,26 @@ const limit = ref(10)
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const form = ref({})
+const keyword = ref('')
 
 const fetchList = async () => {
   loading.value = true
   try {
-    const res = await request.get('/billingRule/list', { params: { page: page.value, limit: limit.value } })
+    const res = await request.get('/billingRule/list', { params: { page: page.value, limit: limit.value, keyword: keyword.value } })
     list.value = res.data?.records || []
     total.value = res.data?.total || 0
   } finally { loading.value = false }
+}
+
+const handleSearch = () => {
+  page.value = 1
+  fetchList()
+}
+
+const handleReset = () => {
+  keyword.value = ''
+  page.value = 1
+  fetchList()
 }
 
 const handleAdd = () => { dialogTitle.value = '新增计费规则'; form.value = { freeMinutes: 0 }; dialogVisible.value = true }
@@ -46,7 +58,12 @@ onMounted(fetchList)
       <template #header>
         <div class="card-header">
           <span>计费规则</span>
-          <el-button type="primary" @click="handleAdd">新增</el-button>
+          <div class="search-box">
+            <el-input v-model="keyword" placeholder="搜索备注内容" size="small" clearable style="width:220px" @keyup.enter="handleSearch" />
+            <el-button type="primary" size="small" @click="handleSearch">搜索</el-button>
+            <el-button size="small" @click="handleReset">重置</el-button>
+            <el-button type="primary" size="small" @click="handleAdd">新增</el-button>
+          </div>
         </div>
       </template>
       <el-table :data="list" v-loading="loading" border stripe>
@@ -85,5 +102,6 @@ onMounted(fetchList)
 <style scoped>
 .page-container { padding: 0; }
 .card-header { display: flex; justify-content: space-between; align-items: center; }
+.search-box { display: flex; gap: 8px; align-items: center; }
 .pagination { margin-top: 16px; justify-content: flex-end; }
 </style>

@@ -10,6 +10,7 @@ const page = ref(1)
 const limit = ref(10)
 const dialogVisible = ref(false)
 const form = ref({})
+const keyword = ref('')
 
 const typeMap = ['网点问题','设备故障','软件异常','使用体验','其他']
 const statusMap = ['待处理','处理中','已处理','已驳回']
@@ -18,10 +19,21 @@ const statusType = ['danger','warning','success','info']
 const fetchList = async () => {
   loading.value = true
   try {
-    const res = await getFeedbackList(page.value, limit.value)
+    const res = await getFeedbackList(page.value, limit.value, keyword.value)
     list.value = res.data?.records || []
     total.value = res.data?.total || 0
   } finally { loading.value = false }
+}
+
+const handleSearch = () => {
+  page.value = 1
+  fetchList()
+}
+
+const handleReset = () => {
+  keyword.value = ''
+  page.value = 1
+  fetchList()
 }
 
 const openHandle = (row) => {
@@ -40,7 +52,16 @@ onMounted(fetchList)
 <template>
   <div class="page-container">
     <el-card>
-      <template #header><span>故障反馈</span></template>
+      <template #header>
+        <div class="card-header">
+          <span>故障反馈</span>
+          <div class="search-box">
+            <el-input v-model="keyword" placeholder="搜索编号/内容" size="small" clearable style="width:220px" @keyup.enter="handleSearch" />
+            <el-button type="primary" size="small" @click="handleSearch">搜索</el-button>
+            <el-button size="small" @click="handleReset">重置</el-button>
+          </div>
+        </div>
+      </template>
       <el-table :data="list" v-loading="loading" border stripe>
         <el-table-column prop="feedbackNo" label="编号" width="140" />
         <el-table-column prop="type" label="类型" width="90"><template #default="{row}">{{typeMap[row.type]||'未知'}}</template></el-table-column>
@@ -76,5 +97,7 @@ onMounted(fetchList)
 
 <style scoped>
 .page-container { padding: 0; }
+.card-header { display: flex; justify-content: space-between; align-items: center; }
+.search-box { display: flex; gap: 8px; align-items: center; }
 .pagination { margin-top: 16px; justify-content: flex-end; }
 </style>

@@ -1,7 +1,7 @@
 import request from '@/utils/request.js'
 
-export const getUserList = (page, limit) => {
-  return request.get('/user/list', { params: { page, limit } })
+export const getUserList = (page, limit, keyword = '') => {
+  return request.get('/user/list', { params: { page, limit, keyword } })
 }
 
 export const getUserById = (id) => {

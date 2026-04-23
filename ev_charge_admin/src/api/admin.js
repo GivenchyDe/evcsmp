@@ -4,8 +4,8 @@ export const login = (username, password) => {
   return request.get('/admin/login', { params: { username, password } })
 }
 
-export const getAdminList = (page, limit) => {
-  return request.get('/admin/list', { params: { page, limit } })
+export const getAdminList = (page, limit, keyword = '') => {
+  return request.get('/admin/list', { params: { page, limit, keyword } })
 }
 
 export const addAdmin = (data) => {

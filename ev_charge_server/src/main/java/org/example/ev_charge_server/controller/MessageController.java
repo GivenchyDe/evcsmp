@@ -1,6 +1,8 @@
 package org.example.ev_charge_server.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.lang3.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,8 +29,13 @@ public class MessageController {
     @Parameter(name = "page", description = "页码，从1开始", required = true)
     @Parameter(name = "limit", description = "每页数量", required = true)
     @GetMapping("/list")
-    public Result<Page<Message>> list(Integer page, Integer limit) {
+    public Result<Page<Message>> list(Integer page, Integer limit, String keyword) {
         Page<Message> pageObj = new Page<>(page, limit);
+        if (StringUtils.isNotBlank(keyword)) {
+            QueryWrapper<Message> wrapper = new QueryWrapper<>();
+            wrapper.like("title", keyword).or().like("content", keyword);
+            return Result.ok(messageService.page(pageObj, wrapper));
+        }
         return Result.ok(messageService.page(pageObj));
     }
 
